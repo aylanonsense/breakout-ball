@@ -5,9 +5,9 @@ define([
 ) {
 	var GRAVITY = 5;
 	var MAX_SPEED = 999;
-	var WALL_BOUNCE_PERCENT = 1.0;
-	var CEILING_BOUNCE_PERCENT = 1.0;
-	var FLOOR_BOUNCE_PERCENT = 1.0;
+	var WALL_BOUNCE_PERCENT = 0.8;
+	var CEILING_BOUNCE_PERCENT = 0.8;
+	var FLOOR_BOUNCE_PERCENT = 0.8;
 
 	function Ball(params) {
 		this.x = params.x || 0;

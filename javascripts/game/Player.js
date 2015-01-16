@@ -16,7 +16,7 @@ define([
 	var UPWARDS_JUMP_SPEED = 340;
 	var LEANING_JUMP_SPEED_PERCENT = 0.5;
 	var TIME_TO_RUNNING_JUMP = 9 / 60 - 0.0001;
-	var SWING_TIME = 28 / 60 - 0.0001;
+	var SWING_FRAMES = 8 * 2;
 
 	var nextSwingId = 0;
 	function Player(params) {
@@ -31,29 +31,53 @@ define([
 		this._isAirborne = true;
 		this._horizontalJumpCharge = 0;
 		this._swingHitBoxes = [];
+		this._isChargined = false;
 		var s = 5;
 		this._swings = {
 			forehand: [
-				[],
-				[ new SwingHitBox({ player: this, x: -7 * s, y: 12 * s,
-					height: 3 * s, width: 3 * s, dir: { x: 1, y: 0.1 },
-					speedMult: 1.25, minSpeed: 200, stability: 0.9 }) ],
-				[ new SwingHitBox({ player: this, x: 10 * s, y: 9 * s,
-					height: 4 * s, width: 3 * s, dir: { x: 1, y: -0.4 },
-					speedMult: 1.25, minSpeed: 200, stability: 0.9 }) ],
-				[ new SwingHitBox({ player: this, x: 9 * s, y: -1 * s,
-					height: 3 * s, width: 3 * s, dir: { x: -0.1, y: -1 },
-					speedMult: 1.25, minSpeed: 200, stability: 0.9 }) ],
-				[ new SwingHitBox({ player: this, x: 4 * s, y: -4 * s,
-					height: 3 * s, width: 3 * s, dir: { x: -1, y: -0.1 },
-					speedMult: 1.25, minSpeed: 200, stability: 0.9 }) ]
+				[ new SwingHitBox({ player: this, x: -10 * s, y: 3 * s,
+					width: 6 * s, height: 8 * s, dir: { x: -0.1, y: 1 },
+					speedMult: 1.00, minSpeed: 400, stability: 0.4 }) ],
+				[ new SwingHitBox({ player: this, x: -10 * s, y: 9 * s,
+					width: 7 * s, height: 6 * s, dir: { x: 1, y: 0.25 },
+					speedMult: 1.10, minSpeed: 400, stability: 0.5 }) ],
+				[ new SwingHitBox({ player: this, x: -7 * s, y: 9 * s,
+					width: 4 * s, height: 5 * s, dir: { x: 1, y: 0.2 },
+					speedMult: 1.20, minSpeed: 600, stability: 0.6 }),
+					new SwingHitBox({ player: this, x: -3 * s, y: 9 * s,
+					width: 6 * s, height: 9 * s, dir: { x: 1, y: -0.2 },
+					speedMult: 1.25, minSpeed: 800, stability: 0.7 }), ],
+				[ new SwingHitBox({ player: this, x: -1 * s, y: 10 * s,
+					width: 7 * s, height: 6 * s, dir: { x: 1, y: -0.4 },
+					speedMult: 1.40, minSpeed: 1200, stability: 0.9 }),
+					new SwingHitBox({ player: this, x: 6 * s, y: 9 * s,
+					width: 8 * s, height: 9 * s, dir: { x: 1, y: -0.5 },
+					speedMult: 1.40, minSpeed: 1200, stability: 0.9 }) ],
+				[ new SwingHitBox({ player: this, x: 6 * s, y: 9 * s,
+					width: 6 * s, height: 5 * s, dir: { x: 0.7, y: -1 },
+					speedMult: 1.25, minSpeed: 800, stability: 0.8 }),
+					new SwingHitBox({ player: this, x: 8 * s, y: 4 * s,
+					width: 7 * s, height: 5 * s, dir: { x: 0.4, y: -1 },
+					speedMult: 1.25, minSpeed: 800, stability: 0.7 }) ],
+				[ new SwingHitBox({ player: this, x: 8 * s, y: -1 * s,
+					width: 6 * s, height: 9 * s, dir: { x: -0.1, y: -1 },
+					speedMult: 1.10, minSpeed: 400, stability: 0.5 }) ],
+				[ new SwingHitBox({ player: this, x: 5 * s, y: -3 * s,
+					width: 5 * s, height: 5 * s, dir: { x: -1, y: -1 },
+					speedMult: 0.6, minSpeed: 200, stability: 0.3 }) ],
+				[ new SwingHitBox({ player: this, x: 3 * s, y: -5 * s,
+					width: 5 * s, height: 5 * s, dir: { x: -1, y: -0.1 },
+					speedMult: 0.5, minSpeed: 200, stability: 0.1 }) ],
 			]
 		};
 		this._lastSwingId = 0;
-		this._swingTime = 0;
+		this._swingFramesLeft = 0;
+		this._swingFrame = null;
 		this._swingId = null;
 	}
 	Player.prototype.tick = function(t) {
+		var f = t / (1 / Constants.TARGET_FRAME_RATE); //frames
+
 		//gravity
 		this.vel.y += GRAVITY;
 
@@ -129,35 +153,28 @@ define([
 			if(this.vel.x < 0) { this.vel.x = WALL_BOUNCE_SPEED; }
 		}
 
-		//decrement timers
-		this._swingTime = (this._swingTime < t ? 0 : this._swingTime - t);
-		var swingFrame = null;
-		if(this._swingTime === 0) { swingFrame = null; }
-		else if(this._swingTime < 7 / 60 + 0.0001) { swingFrame = 4; }
-		else if(this._swingTime < 14 / 60 + 0.0001) { swingFrame = 3; }
-		else if(this._swingTime < 21 / 60 + 0.0001) { swingFrame = 2; }
-		else if(this._swingTime < 28 / 60 + 0.0001) { swingFrame = 1; }
-		else { swingFrame = null; }
-		if(swingFrame === null) {
+		//work on your SWING!
+		this._swingFramesLeft = (this._swingFramesLeft < f ? 0 : this._swingFramesLeft - f);
+		if(this._swingFramesLeft === 0) {
+			this._swingFrame = null;
 			this._swingHitBoxes = [];
 		}
 		else {
-			this._swingHitBoxes = this._swings.forehand[swingFrame];
+			this._swingFrame = 8 - Math.ceil(this._swingFramesLeft / 2);
+			this._swingHitBoxes = this._swings.forehand[this._swingFrame] || [];
 		}
 	};
 	Player.prototype.render = function(ctx) {
-		ctx.fillStyle = (this._swingTime > 0 ? '#ff0' : '#f00');
-		ctx.fillRect(this.x, this.y, this.width, this.height);
 		var frame;
-		if(this._swingTime === 0) { frame = 0; }
-		else if(this._swingTime < 7 / 60 + 0.0001) { frame = 5; }
-		else if(this._swingTime < 14 / 60 + 0.0001) { frame = 4; }
-		else if(this._swingTime < 21 / 60 + 0.0001) { frame = 3; }
-		else if(this._swingTime < 28 / 60 + 0.0001) { frame = 2; }
+		if(this._swingFrame !== null) { frame = 2 + this._swingFrame; }
+		else if(this._isCharging) { frame = 1; }
+		else { frame = 0; }
 		SPRITE.render(ctx, { x: 0, y: 0}, this.x, this.y, frame, false);
 		//render swing hit boxes
-		for(var i = 0; i < this._swingHitBoxes.length; i++) {
-			this._swingHitBoxes[i].render(ctx);
+		if(false) {
+			for(var i = 0; i < this._swingHitBoxes.length; i++) {
+				this._swingHitBoxes[i].render(ctx);
+			}
 		}
 	};
 	Player.prototype.onKeyboardEvent = function(evt, keyboard) {
@@ -177,17 +194,20 @@ define([
 			this._bufferedJumpTime = 6.1 / 60;
 		}
 		else if(evt.gameKey === 'SWING') {
-			if(evt.isDown) {
-				//TODO
-			}
-			else if(this._swingTime === 0) {
-				this._swingTime = SWING_TIME;
-				this._swingId = nextSwingId++;
+			if(this._swingFramesLeft === 0) {
+				if(evt.isDown) {
+					this._isCharging = true;
+				}
+				else if(this._isCharging) {
+					this._isCharging = false;
+					this._swingFramesLeft = SWING_FRAMES;
+					this._swingId = nextSwingId++;
+				}
 			}
 		}
 	};
 	Player.prototype.checkForHits = function(balls) {
-		if(this._swingTime > 0) {
+		if(this._swingFramesLeft > 0) {
 			for(var i = 0; i < balls.length; i++) {
 				var ball = balls[i];
 				for(var j = 0; j < this._swingHitBoxes.length; j++) {
