@@ -1,8 +1,26 @@
 <html>
 	<head>
 		<title>breakout-ball</title>
-		<script type="text/javascript" src="/game/lib/require.js" data-main="/game/Main.js"></script>
-		<link rel="stylesheet" href="/stylesheets/style.css"></link>
+		<script type="text/javascript">
+			var BASE_URL = window.location.href;
+			if (BASE_URL.endsWith('/')) {
+				BASE_URL = BASE_URL.substring(0, BASE_URL.length - 1);
+			}
+			(function() {
+				// add styles
+				var styles = document.createElement('link');
+				styles.setAttribute('rel', 'stylesheet');
+				styles.setAttribute('type', 'text/css');
+				styles.setAttribute('href', BASE_URL + '/stylesheets/style.css');
+				document.getElementsByTagName('head')[0].appendChild(styles);
+
+				// add script
+				var scripts = document.createElement('script');
+				scripts.setAttribute('src', BASE_URL + '/game/lib/require.js');
+				scripts.setAttribute('data-main', BASE_URL + '/game/Main.js');
+				document.head.appendChild(scripts);
+			})();
+		</script>
 	</head>
 	<body>
 		<canvas id="game-canvas" width="800px" height="600px"></canvas>

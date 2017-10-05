@@ -1,9 +1,9 @@
 //configure requirejs
 requirejs.config({
-	baseUrl: '/',
+	baseUrl: BASE_URL,
 	paths: {
-		jquery: '/game/lib/jquery',
-		create: '/game/lib/instanqi8'
+		jquery: 'game/lib/jquery',
+		create: 'game/lib/instanqi8'
 	}
 });
 

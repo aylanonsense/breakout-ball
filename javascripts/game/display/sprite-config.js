@@ -1,6 +1,6 @@
 define({
 	Player: {
-		imagePath: '/image/image.gif',
+		imagePath: BASE_URL + '/image/image.gif',
 		width: 23,
 		height: 23,
 		scale: 5,

@@ -8,7 +8,7 @@
 		"amdefine": "0.1.0",
 		"mocha": "~1.21.0",
 		"istanbul": "~0.2.16",
-		"chai": "~1.9.1",
+		"chai": "~1.9.1"
 	},
 	"scripts": {
 		"start": "node app.js",
