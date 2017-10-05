@@ -11,8 +11,8 @@ define([
 ) {
 	var isPaused = false;
 	//create game objects
-	var player = new Player({ x: 240, y: 300 });
-	var bricks = [ new Brick({ x: 400, y: 200, color: '#f0f' }) ];
+	var player = new Player({ x: 140, y: 300 });
+	var bricks = [ new Brick({ x: 300, y: 150, color: '#f0f' }) ];
 	var balls = [];
 	for(var i = 0; i < 3; i++) {
 		balls.push(new Ball({
