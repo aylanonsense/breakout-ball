@@ -11,5 +11,5 @@ var lessMiddleware = require('less-middleware');
 var app = express();
 app.use(lessMiddleware({ src: __dirname + "/public", compress: true }));
 app.use(express.static(__dirname + '/public'));
-app.use(express.static(__dirname + '/javascripts/game'));
+app.use(express.static(__dirname + '/javascripts'));
 app.listen(process.env.PORT || 3000);
